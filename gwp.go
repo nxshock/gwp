@@ -52,7 +52,8 @@ func New(threadCount int) *WorkerPool {
 			case <-tickerUpdateText.C:
 				if workerPool.EstimateCount > 0 {
 					fmt.Fprintf(os.Stderr, newLine)
-					fmt.Fprintf(os.Stderr, "%.1f%% (%d / %d) ETA: %s at %.2f speed"+endLine, float64(counter*100)/float64(workerPool.EstimateCount), counter, workerPool.EstimateCount,
+					fmt.Fprintf(os.Stderr, "%.1f%% (%d / %d) ETA: %s at %.2f rps"+endLine,
+						float64(counter*100)/float64(workerPool.EstimateCount), counter, workerPool.EstimateCount,
 						time.Second*time.Duration(float64(workerPool.EstimateCount-counter)/currentSpeed), currentSpeed)
 				}
 			case <-tickerCalculateEta.C:
