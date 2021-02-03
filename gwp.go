@@ -37,16 +37,14 @@ func New(threadCount int) *WorkerPool {
 		var prevPos int
 		prevTime := time.Now()
 
-		const calculateEtaPeriod = time.Minute
-
-		tickerUpdateText := time.NewTicker(time.Second)
-		tickerCalculateEta := time.NewTicker(calculateEtaPeriod)
+		tickerUpdateText := time.NewTicker(defaultProgressUpdatePeriod)
+		tickerCalculateEta := time.NewTicker(defaultCalculateEtaPeriod)
 		defer func() {
 			tickerUpdateText.Stop()
 			tickerCalculateEta.Stop()
 		}()
 
-		var currentSpeed float64 // items per sec
+		var currentSpeed float64 // jobs per sec
 
 		fmt.Fprintf(os.Stderr, endLine)
 		for {
