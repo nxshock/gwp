@@ -27,7 +27,9 @@ func f(i int) error {
 }
 
 func main() {
-	worker := gwp.New(4)
+
+	worker := gwp.New(4)       // Create pool with specified number of workers
+	worker.EstimateCount = 100 // Set estimate jobs count count to show progress
 
 	for i := 0; i < 100; i++ {
 		n := i
