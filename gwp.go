@@ -52,7 +52,7 @@ func New(threadCount int) *WorkerPool {
 			case <-tickerUpdateText.C:
 				workerPool.printProgress()
 			case <-tickerCalculateEta.C:
-				workerPool.currentSpeed = float64(workerPool.processedCount-prevPos) * float64(time.Second) / float64(time.Now().Sub(prevTime))
+				workerPool.currentSpeed = float64(workerPool.processedCount-prevPos) * float64(defaultCalculateEtaPeriod) / float64(time.Now().Sub(prevTime))
 				prevPos = workerPool.processedCount
 				prevTime = time.Now()
 			case err := <-workerPool.resultChan:
