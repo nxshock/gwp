@@ -10,8 +10,8 @@ import (
 
 // WorkerPool represents pool of workers.
 type WorkerPool struct {
-	f             chan func() error
-	r             chan error
+	jobChan       chan func() error
+	resultChan    chan error
 	stopChan      chan struct{}
 	wg            sync.WaitGroup
 	EstimateCount int
@@ -29,9 +29,9 @@ func New(threadCount int) *WorkerPool {
 	}
 
 	workerPool := &WorkerPool{
-		f:        make(chan func() error),
-		r:        make(chan error),
-		stopChan: make(chan struct{})}
+		jobChan:    make(chan func() error),
+		resultChan: make(chan error),
+		stopChan:   make(chan struct{})}
 
 	workerPool.wg.Add(threadCount)
 
@@ -55,7 +55,7 @@ func New(threadCount int) *WorkerPool {
 				workerPool.currentSpeed = float64(workerPool.processedCount-prevPos) * float64(time.Second) / float64(time.Now().Sub(prevTime))
 				prevPos = workerPool.processedCount
 				prevTime = time.Now()
-			case err := <-workerPool.r:
+			case err := <-workerPool.resultChan:
 				if err != nil {
 					workerPool.errorCount++
 				}
@@ -70,8 +70,8 @@ func New(threadCount int) *WorkerPool {
 		go func() {
 			defer workerPool.wg.Done()
 
-			for f := range workerPool.f {
-				workerPool.r <- f()
+			for f := range workerPool.jobChan {
+				workerPool.resultChan <- f()
 			}
 		}()
 	}
@@ -101,15 +101,15 @@ func (workerPool *WorkerPool) printProgress() {
 
 // Add sends specified task for execution.
 func (workerPool *WorkerPool) Add(f func() error) {
-	workerPool.f <- f
+	workerPool.jobChan <- f
 }
 
 // CloseAndWait stops accepting tasks and waits for all tasks to complete.
 func (workerPool *WorkerPool) CloseAndWait() {
-	close(workerPool.f)
+	close(workerPool.jobChan)
 	workerPool.wg.Wait()
 	workerPool.stopChan <- struct{}{}
-	close(workerPool.r)
+	close(workerPool.resultChan)
 
 	workerPool.printProgress()
 }
