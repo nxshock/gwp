@@ -115,3 +115,8 @@ func (workerPool *WorkerPool) CloseAndWait() {
 
 	workerPool.printProgress()
 }
+
+// ErrorCount returns total error count
+func (workerPool *WorkerPool) ErrorCount() int {
+	return workerPool.errorCount
+}
