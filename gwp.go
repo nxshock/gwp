@@ -10,11 +10,13 @@ import (
 
 // WorkerPool represents pool of workers.
 type WorkerPool struct {
-	jobChan       chan func() error
-	resultChan    chan error
-	stopChan      chan struct{}
-	wg            sync.WaitGroup
+	jobChan    chan func() error
+	resultChan chan error
+	stopChan   chan struct{}
+	wg         sync.WaitGroup
+
 	EstimateCount int
+	ShowProgress  bool
 
 	processedCount int     // processed jobs count
 	errorCount     int     // processed jobs count that returned error
@@ -80,7 +82,7 @@ func New(threadCount int) *WorkerPool {
 }
 
 func (workerPool *WorkerPool) printProgress() {
-	if workerPool.EstimateCount == 0 {
+	if !workerPool.ShowProgress {
 		return
 	}
 
@@ -92,7 +94,7 @@ func (workerPool *WorkerPool) printProgress() {
 		fmt.Fprintf(os.Stderr, "    Errors: %d (%.1f%%)",
 			workerPool.errorCount, float64(workerPool.errorCount*100)/float64(workerPool.EstimateCount))
 	}
-	if workerPool.currentSpeed > 0 {
+	if workerPool.EstimateCount > 0 && workerPool.currentSpeed > 0 {
 		fmt.Fprintf(os.Stderr, "    ETA: %s at %.2f rps",
 			time.Second*time.Duration(float64(workerPool.EstimateCount-workerPool.processedCount)/workerPool.currentSpeed), workerPool.currentSpeed)
 	}
