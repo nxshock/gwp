@@ -87,8 +87,13 @@ func (workerPool *WorkerPool) printProgress() {
 	}
 
 	fmt.Fprintf(os.Stderr, newLine)
-	fmt.Fprintf(os.Stderr, "Progress: %.1f%% (%d / %d)",
-		float64(workerPool.processedCount*100)/float64(workerPool.EstimateCount), workerPool.processedCount, workerPool.EstimateCount)
+
+	if workerPool.EstimateCount == 0 {
+		fmt.Fprintf(os.Stderr, "Progress: %d", workerPool.processedCount)
+	} else {
+		fmt.Fprintf(os.Stderr, "Progress: %.1f%% (%d / %d)",
+			float64(workerPool.processedCount*100)/float64(workerPool.EstimateCount), workerPool.processedCount, workerPool.EstimateCount)
+	}
 
 	if workerPool.errorCount > 0 {
 		fmt.Fprintf(os.Stderr, "    Errors: %d (%.1f%%)",
