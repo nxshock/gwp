@@ -101,7 +101,7 @@ func (workerPool *WorkerPool) printProgress() {
 	}
 	if workerPool.EstimateCount > 0 && workerPool.currentSpeed > 0 {
 		fmt.Fprintf(os.Stderr, "    ETA: %s at %.2f rps",
-			time.Second*time.Duration(float64(workerPool.EstimateCount-workerPool.processedCount)/workerPool.currentSpeed), workerPool.currentSpeed)
+			fmtDuration(time.Second*time.Duration(float64(workerPool.EstimateCount-workerPool.processedCount)/workerPool.currentSpeed)), workerPool.currentSpeed)
 	}
 	fmt.Fprint(os.Stderr, endLine)
 }
@@ -121,7 +121,7 @@ func (workerPool *WorkerPool) CloseAndWait() {
 	workerPool.printProgress()
 }
 
-// ErrorCount returns total error count
+// ErrorCount returns total error count.
 func (workerPool *WorkerPool) ErrorCount() int {
 	return workerPool.errorCount
 }
