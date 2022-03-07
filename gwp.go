@@ -48,10 +48,16 @@ func New(threadCount int) *WorkerPool {
 			tickerCalculateEta.Stop()
 		}()
 
-		fmt.Fprintf(os.Stderr, endLine)
+		newLined := false
+
 		for {
 			select {
 			case <-tickerUpdateText.C:
+				if !newLined {
+					fmt.Fprintf(os.Stderr, endLine)
+					newLined = true
+				}
+
 				workerPool.printProgress()
 			case <-tickerCalculateEta.C:
 				workerPool.currentSpeed = float64(workerPool.processedCount-prevPos) * float64(time.Second) / float64(time.Now().Sub(prevTime))
