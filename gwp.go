@@ -113,7 +113,7 @@ func (workerPool *WorkerPool) printProgress() {
 		}
 
 		if workerPool.ShowSpeed {
-			fmt.Fprintf(os.Stderr, "Speed: %.2f rps", workerPool.currentSpeed)
+			fmt.Fprintf(os.Stderr, "    Speed: %.2f rps", workerPool.currentSpeed)
 		}
 	}
 
