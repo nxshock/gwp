@@ -17,6 +17,7 @@ type WorkerPool struct {
 
 	EstimateCount int
 	ShowProgress  bool
+	ShowSpeed     bool
 
 	processedCount int     // processed jobs count
 	errorCount     int     // processed jobs count that returned error
@@ -105,10 +106,17 @@ func (workerPool *WorkerPool) printProgress() {
 		fmt.Fprintf(os.Stderr, "    Errors: %d (%.1f%%)",
 			workerPool.errorCount, float64(workerPool.errorCount*100)/float64(workerPool.EstimateCount))
 	}
-	if workerPool.EstimateCount > 0 && workerPool.currentSpeed > 0 {
-		fmt.Fprintf(os.Stderr, "    ETA: %s at %.2f rps",
-			fmtDuration(time.Second*time.Duration(float64(workerPool.EstimateCount-workerPool.processedCount)/workerPool.currentSpeed)), workerPool.currentSpeed)
+
+	if workerPool.currentSpeed > 0 {
+		if workerPool.EstimateCount > 0 {
+			fmt.Fprintf(os.Stderr, "    ETA: %s", fmtDuration(time.Second*time.Duration(float64(workerPool.EstimateCount-workerPool.processedCount)/workerPool.currentSpeed)))
+		}
+
+		if workerPool.ShowSpeed {
+			fmt.Fprintf(os.Stderr, "Speed: %.2f rps", workerPool.currentSpeed)
+		}
 	}
+
 	fmt.Fprint(os.Stderr, endLine)
 }
 

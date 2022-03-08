@@ -30,6 +30,7 @@ func main() {
 
 	worker := gwp.New(4)       // Create pool with specified number of workers
 	worker.ShowProgress = true // Enable progress indicator
+	worker.ShowProgress = true // Show processing speed in progress indicator
 	worker.EstimateCount = 100 // Set total number on jobs to calculate ETA
 
 	for i := 0; i < 100; i++ {
