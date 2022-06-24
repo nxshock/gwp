@@ -25,7 +25,7 @@ type WorkerPool struct {
 }
 
 // New creates new pool of workers with specified goroutine count.
-// If specified number of workers less than 1, runtume.NumCPU() is used.
+// If specified number of workers less than 1, runtime.NumCPU() is used.
 func New(threadCount int) *WorkerPool {
 	if threadCount <= 0 {
 		threadCount = runtime.NumCPU()
