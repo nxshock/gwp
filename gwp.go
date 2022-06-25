@@ -1,6 +1,7 @@
 package gwp
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"runtime"
@@ -22,6 +23,8 @@ type WorkerPool struct {
 	processedCount int     // processed jobs count
 	errorCount     int     // processed jobs count that returned error
 	currentSpeed   float64 // speed calculated for last minute
+
+	lastProgressMessage string
 }
 
 // New creates new pool of workers with specified goroutine count.
@@ -93,31 +96,41 @@ func (workerPool *WorkerPool) printProgress() {
 		return
 	}
 
-	fmt.Fprintf(os.Stderr, newLine)
+	buf := new(bytes.Buffer)
+
+	fmt.Fprintf(buf, newLine)
 
 	if workerPool.EstimateCount == 0 {
-		fmt.Fprintf(os.Stderr, "Progress: %d", workerPool.processedCount)
+		fmt.Fprintf(buf, "Progress: %d", workerPool.processedCount)
 	} else {
-		fmt.Fprintf(os.Stderr, "Progress: %.1f%% (%d / %d)",
+		fmt.Fprintf(buf, "Progress: %.1f%% (%d / %d)",
 			float64(workerPool.processedCount*100)/float64(workerPool.EstimateCount), workerPool.processedCount, workerPool.EstimateCount)
 	}
 
 	if workerPool.errorCount > 0 {
-		fmt.Fprintf(os.Stderr, "    Errors: %d (%.1f%%)",
+		fmt.Fprintf(buf, "    Errors: %d (%.1f%%)",
 			workerPool.errorCount, float64(workerPool.errorCount*100)/float64(workerPool.EstimateCount))
 	}
 
 	if workerPool.currentSpeed > 0 {
 		if workerPool.EstimateCount > 0 {
-			fmt.Fprintf(os.Stderr, "    ETA: %s", fmtDuration(time.Second*time.Duration(float64(workerPool.EstimateCount-workerPool.processedCount)/workerPool.currentSpeed)))
+			fmt.Fprintf(buf, "    ETA: %s", fmtDuration(time.Second*time.Duration(float64(workerPool.EstimateCount-workerPool.processedCount)/workerPool.currentSpeed)))
 		}
 
 		if workerPool.ShowSpeed {
-			fmt.Fprintf(os.Stderr, "    Speed: %.2f rps", workerPool.currentSpeed)
+			fmt.Fprintf(buf, "    Speed: %.2f rps", workerPool.currentSpeed)
 		}
 	}
 
-	fmt.Fprint(os.Stderr, endLine)
+	fmt.Fprint(buf, endLine)
+
+	if buf.String() == workerPool.lastProgressMessage {
+		return
+	}
+
+	buf.WriteTo(os.Stderr)
+
+	workerPool.lastProgressMessage = buf.String()
 }
 
 // Add sends specified task for execution.
