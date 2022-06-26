@@ -128,9 +128,9 @@ func (workerPool *WorkerPool) printProgress() {
 		return
 	}
 
-	buf.WriteTo(os.Stderr)
-
 	workerPool.lastProgressMessage = buf.String()
+
+	buf.WriteTo(os.Stderr)
 }
 
 // Add sends specified task for execution.
