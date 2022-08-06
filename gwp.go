@@ -7,6 +7,8 @@ import (
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/nxshock/go-eta"
 )
 
 // WorkerPool represents pool of workers.
@@ -16,13 +18,15 @@ type WorkerPool struct {
 	stopChan   chan struct{}
 	wg         sync.WaitGroup
 
-	EstimateCount int
+	estimateCount int
 	ShowProgress  bool
 	ShowSpeed     bool
 
 	processedCount int     // processed jobs count
 	errorCount     int     // processed jobs count that returned error
 	currentSpeed   float64 // speed calculated for last minute
+
+	eta *eta.Calculator
 
 	lastProgressMessage string
 }
@@ -37,7 +41,8 @@ func New(threadCount int) *WorkerPool {
 	workerPool := &WorkerPool{
 		jobChan:    make(chan func() error),
 		resultChan: make(chan error),
-		stopChan:   make(chan struct{})}
+		stopChan:   make(chan struct{}),
+		eta:        eta.New(time.Minute, 0)}
 
 	workerPool.wg.Add(threadCount)
 
@@ -58,13 +63,13 @@ func New(threadCount int) *WorkerPool {
 			select {
 			case <-tickerUpdateText.C:
 				if !newLined {
-					fmt.Fprintf(os.Stderr, endLine)
+					fmt.Fprint(os.Stderr, endLine)
 					newLined = true
 				}
 
-				workerPool.printProgress()
+				_ = workerPool.printProgress()
 			case <-tickerCalculateEta.C:
-				workerPool.currentSpeed = float64(workerPool.processedCount-prevPos) * float64(time.Second) / float64(time.Now().Sub(prevTime))
+				workerPool.currentSpeed = float64(workerPool.processedCount-prevPos) * float64(time.Second) / float64(time.Since(prevTime))
 				prevPos = workerPool.processedCount
 				prevTime = time.Now()
 			case err := <-workerPool.resultChan:
@@ -72,6 +77,7 @@ func New(threadCount int) *WorkerPool {
 					workerPool.errorCount++
 				}
 				workerPool.processedCount++
+				workerPool.eta.Increment(1)
 			case <-workerPool.stopChan:
 				return
 			}
@@ -91,30 +97,35 @@ func New(threadCount int) *WorkerPool {
 	return workerPool
 }
 
-func (workerPool *WorkerPool) printProgress() {
+func (workerPool *WorkerPool) SetEstimateCount(n int) {
+	workerPool.estimateCount = n
+	workerPool.eta.TotalCount = n
+}
+
+func (workerPool *WorkerPool) printProgress() error {
 	if !workerPool.ShowProgress {
-		return
+		return nil
 	}
 
 	buf := new(bytes.Buffer)
 
-	fmt.Fprintf(buf, newLine)
+	fmt.Fprint(buf, newLine)
 
-	if workerPool.EstimateCount == 0 {
+	if workerPool.estimateCount == 0 {
 		fmt.Fprintf(buf, "Progress: %d", workerPool.processedCount)
 	} else {
 		fmt.Fprintf(buf, "Progress: %.1f%% (%d / %d)",
-			float64(workerPool.processedCount*100)/float64(workerPool.EstimateCount), workerPool.processedCount, workerPool.EstimateCount)
+			float64(workerPool.processedCount*100)/float64(workerPool.estimateCount), workerPool.processedCount, workerPool.estimateCount)
 	}
 
 	if workerPool.errorCount > 0 {
 		fmt.Fprintf(buf, "    Errors: %d (%.1f%%)",
-			workerPool.errorCount, float64(workerPool.errorCount*100)/float64(workerPool.EstimateCount))
+			workerPool.errorCount, float64(workerPool.errorCount*100)/float64(workerPool.estimateCount))
 	}
 
 	if workerPool.currentSpeed > 0 {
-		if workerPool.EstimateCount > 0 {
-			fmt.Fprintf(buf, "    ETA: %s", fmtDuration(time.Second*time.Duration(float64(workerPool.EstimateCount-workerPool.processedCount)/workerPool.currentSpeed)))
+		if workerPool.estimateCount > 0 {
+			fmt.Fprintf(buf, "    ETA: %s", fmtDuration(time.Until(workerPool.eta.Average())))
 		}
 
 		if workerPool.ShowSpeed {
@@ -125,12 +136,17 @@ func (workerPool *WorkerPool) printProgress() {
 	fmt.Fprint(buf, endLine)
 
 	if buf.String() == workerPool.lastProgressMessage {
-		return
+		return nil
 	}
 
 	workerPool.lastProgressMessage = buf.String()
 
-	buf.WriteTo(os.Stderr)
+	_, err := buf.WriteTo(os.Stderr)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Add sends specified task for execution.
@@ -145,7 +161,7 @@ func (workerPool *WorkerPool) CloseAndWait() {
 	workerPool.stopChan <- struct{}{}
 	close(workerPool.resultChan)
 
-	workerPool.printProgress()
+	_ = workerPool.printProgress()
 }
 
 // ErrorCount returns total error count.
