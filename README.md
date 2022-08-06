@@ -28,11 +28,11 @@ func f(i int) error {
 
 func main() {
 
-	worker := gwp.New(4)       // Create pool with specified number of workers
+	worker := gwp.New(4)         // Create pool with specified number of workers
 
-	worker.ShowProgress = true // Enable progress indicator
-	worker.ShowSpeed = true    // Show processing speed in progress indicator
-	worker.EstimateCount = 100 // Set total number on jobs to calculate ETA
+	worker.ShowProgress = true   // Enable progress indicator
+	worker.ShowSpeed = true      // Show processing speed in progress indicator
+	worker.SetEstimateCount(100) // Set total number on jobs to calculate ETA
 
 	for i := 0; i < 100; i++ {
 		n := i
