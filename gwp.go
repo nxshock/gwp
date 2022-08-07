@@ -123,14 +123,12 @@ func (workerPool *WorkerPool) printProgress() error {
 			workerPool.errorCount, float64(workerPool.errorCount*100)/float64(workerPool.estimateCount))
 	}
 
-	if workerPool.currentSpeed > 0 {
-		if workerPool.estimateCount > 0 {
-			fmt.Fprintf(buf, "    ETA: %s", fmtDuration(time.Until(workerPool.eta.Average())))
-		}
+	if workerPool.estimateCount > 0 {
+		fmt.Fprintf(buf, "    ETA: %s", fmtDuration(time.Until(workerPool.eta.Average())))
+	}
 
-		if workerPool.ShowSpeed {
-			fmt.Fprintf(buf, "    Speed: %.2f rps", workerPool.currentSpeed)
-		}
+	if workerPool.currentSpeed > 0 && workerPool.ShowSpeed {
+		fmt.Fprintf(buf, "    Speed: %.2f rps", workerPool.currentSpeed)
 	}
 
 	fmt.Fprint(buf, endLine)
