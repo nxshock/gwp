@@ -42,7 +42,7 @@ func New(threadCount int) *WorkerPool {
 		jobChan:    make(chan func() error),
 		resultChan: make(chan error),
 		stopChan:   make(chan struct{}),
-		eta:        eta.New(time.Minute, 0)}
+		eta:        eta.New(0)}
 
 	workerPool.wg.Add(threadCount)
 

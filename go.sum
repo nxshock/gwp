@@ -3,6 +3,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/nxshock/go-eta v0.1.0 h1:rcy8rNPaVeL3f3c5rJRLvho0FErUJThD0+vihxA7t9c=
 github.com/nxshock/go-eta v0.1.0/go.mod h1:hZ59FHIJSpPeZk38pd/3zUkI4H31hAQ2oFw+NgdU+SA=
+github.com/nxshock/go-eta v0.1.1 h1:N4wi3wjrXJGiheYF4zBIjOwugM+++NWsB1fpeRZaHS4=
+github.com/nxshock/go-eta v0.1.1/go.mod h1:hZ59FHIJSpPeZk38pd/3zUkI4H31hAQ2oFw+NgdU+SA=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
